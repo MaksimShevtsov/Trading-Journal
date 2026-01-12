@@ -1,0 +1,9 @@
+_bmad/
+_bmad-output/
+.agent/
+.claude/
+.codex/
+.cursor/
+.github/agents/
+.opencode/
+CLAUDE.md
