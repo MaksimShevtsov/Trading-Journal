@@ -8,3 +8,6 @@ _bmad-output/
 .opencode/
 CLAUDE.md
 AGENTS.md
+.agents/
+venv/
+.github/skills/
