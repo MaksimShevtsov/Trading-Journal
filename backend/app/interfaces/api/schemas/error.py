@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ErrorDetail(BaseModel):
@@ -10,7 +10,7 @@ class ErrorDetail(BaseModel):
 
     code: str
     message: str
-    details: dict = {}
+    details: dict = Field(default_factory=dict)
 
 
 class ErrorResponse(BaseModel):
