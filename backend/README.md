@@ -14,7 +14,7 @@ Verify the service is running:
 
 ```bash
 curl http://localhost:8000/health
-# {"status": "healthy", "service": "Trading Journal", "version": "0.1.0"}
+# {"status": "healthy", "service": "Trading Journal"}
 ```
 
 ## Project Structure
