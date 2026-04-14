@@ -1,0 +1,54 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Behavioral self-awareness platform for discretionary traders"
+authors = [{ name = "Maksim" }]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "fastapi-request-pipeline>=0.1.0",
+    "rowquery>=0.1.2",
+    "pydantic[email]>=2.9.0",
+    "pydantic-settings>=2.0.0",
+    "structlog>=24.0.0",
+    "jinja2>=3.1.0",
+    "itsdangerous>=2.1.0",
+    "python-multipart>=0.0.22",
+    "psycopg[binary]>=3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.24.0",
+    "ruff>=0.4.0",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "A", "SIM", "TCH"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/admin/**" = ["A002", "TC002", "UP042"]
+"app/admin_resources/**" = ["A002"]
+"tests/**" = ["A002"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
