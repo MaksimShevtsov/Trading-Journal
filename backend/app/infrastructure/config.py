@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from urllib.parse import quote_plus
+
 from pydantic_settings import BaseSettings
 
 
@@ -33,6 +35,12 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Build the database connection URL."""
-        return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        if self.db_driver == "sqlite":
+            return f"sqlite:///{self.db_name}"
+        if self.db_driver == "postgresql":
+            user = quote_plus(self.db_user)
+            password = quote_plus(self.db_password)
+            return f"postgresql://{user}:{password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        return f"{self.db_driver}://{self.db_host}:{self.db_port}/{self.db_name}"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}

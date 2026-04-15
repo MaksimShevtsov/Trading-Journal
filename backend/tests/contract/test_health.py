@@ -14,12 +14,9 @@ from app.main import create_app
 @pytest.fixture
 def client():
     """Create a test client with mock app state (no database needed)."""
-    app = create_app()
-    app.state.settings = Settings()
-    # Mock engine to avoid database connection
     mock_engine = MagicMock()
     mock_engine.close = AsyncMock()
-    app.state.engine = mock_engine
+    app = create_app(settings=Settings(), engine=mock_engine)
     return TestClient(app, raise_server_exceptions=True)
 
 

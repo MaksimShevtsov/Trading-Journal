@@ -7,7 +7,9 @@ Behavioral self-awareness platform for discretionary traders
 ### With Docker
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+cd deploy/dev
+cp .env.dev.example .env.dev
+docker compose up --build
 ```
 
 Verify the service is running:

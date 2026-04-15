@@ -39,7 +39,7 @@ test-cov:
 	$(UV) run $(PYTEST) --cov=app --cov-report=term
 
 migrate:
-	$(UV) run python scripts/migrate.py
+	cd backend && $(UV) run python -m app.infrastructure.db.migrations
 
 check: format lint test
 

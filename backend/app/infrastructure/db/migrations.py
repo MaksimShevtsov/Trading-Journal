@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+from inspect import isawaitable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -78,3 +79,26 @@ async def run_migrations(migration_dir: str | Path, engine: AsyncEngine) -> None
             await conn.commit()
 
         logger.info("Migration %s applied", version)
+
+
+async def migrate() -> None:
+    """Run migrations using application settings."""
+    from app.infrastructure.config import Settings
+    from app.infrastructure.db.connection import create_engine
+
+    settings = Settings()
+    engine = create_engine(settings)
+    try:
+        await run_migrations("sql/migrations", engine)
+    finally:
+        close = getattr(engine, "close", None)
+        if callable(close):
+            result = close()
+            if isawaitable(result):
+                await result
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(migrate())

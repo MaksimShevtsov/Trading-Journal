@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from inspect import isawaitable
 from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, Request
@@ -33,27 +34,52 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan: initialize and shutdown resources."""
-    settings = Settings()
+    settings = getattr(app.state, "settings", None) or Settings()
     setup_logging(settings)
-    engine = create_engine(settings)
-    await run_migrations("sql/migrations", engine)
+
+    engine = getattr(app.state, "engine", None)
+    created_engine = engine is None
+    if created_engine:
+        engine = create_engine(settings)
+
+    should_skip_migrations = getattr(app.state, "skip_migrations", False) or not created_engine
+    if not should_skip_migrations:
+        await run_migrations("sql/migrations", engine)
+
     app.state.settings = settings
     app.state.engine = engine
+
     logger.info("Application started", extra={"service": settings.app_name})
     yield
     logger.info("Application shutting down")
+    close = getattr(engine, "close", None)
+    if callable(close):
+        result = close()
+        if isawaitable(result):
+            await result
 
 
-def create_app() -> FastAPI:
+def create_app(
+    *,
+    settings: Settings | None = None,
+    engine: object | None = None,
+    skip_migrations: bool = False,
+) -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(lifespan=lifespan)
+    if settings is not None:
+        app.state.settings = settings
+    if engine is not None:
+        app.state.engine = engine
+    if skip_migrations:
+        app.state.skip_migrations = True
 
     app.include_router(health_router)
     app.include_router(users_router, prefix="/api/v1")
 
     # Admin panel — only mounted when ADMIN_ENABLED=true in environment
-    settings = Settings()
-    if settings.admin_enabled:
+    runtime_settings = settings or Settings()
+    if runtime_settings.admin_enabled:
         from app.admin.site import AdminSite
         from app.admin_resources.auth import FakeAdminAuthProvider
         from app.admin_resources.users import create_user_resource
@@ -61,8 +87,8 @@ def create_app() -> FastAPI:
         admin = AdminSite(
             title="Trading Journal Admin",
             auth_provider=FakeAdminAuthProvider(),
-            session_secret=settings.admin_session_secret,
-            https_only=settings.admin_https_only,
+            session_secret=runtime_settings.admin_session_secret,
+            https_only=runtime_settings.admin_https_only,
         )
         admin.register(create_user_resource())
         admin.mount(app)
