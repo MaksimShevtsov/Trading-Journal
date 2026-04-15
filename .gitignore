@@ -20,3 +20,36 @@ docs/
 .github/copilot-instructions.md
 .vscode/mcp.json
 .vscode/settings.json
+opencode.json
+.specify/
+specs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Environment
+.env*
+!.env.local.example
+!.env.dev.example
+!.env.prod.example
+
+# IDE
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Docker volumes
+pgdata_local/

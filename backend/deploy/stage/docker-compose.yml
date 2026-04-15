@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.stage
+    environment:
+      - APP_ENV=stage
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys, urllib.request; response = urllib.request.urlopen('http://localhost:8000/health'); sys.exit(0 if response.status == 200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: backend_stage
+      POSTGRES_USER: backend_stage_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    restart: always
+    volumes:
+      - pgdata_stage:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U backend_stage_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata_stage:
