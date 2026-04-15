@@ -42,8 +42,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if created_engine:
         engine = create_engine(settings)
 
-    should_skip_migrations = getattr(app.state, "skip_migrations", False) or not created_engine
-    if not should_skip_migrations:
+    should_run_migrations = not (getattr(app.state, "skip_migrations", False) or not created_engine)
+    if should_run_migrations:
         await run_migrations("sql/migrations", engine)
 
     app.state.settings = settings
